@@ -6,21 +6,22 @@ output: html_document
 ```{r setup, include=FALSE}
 options(scipen = 999)
 library(tidyverse)
-library(modeldata)
+library(rcfss)
 library(tidymodels)
 
-data("ad_data")
-alz <- ad_data
+bechdel <- bechdel %>%
+  # remove column - unique to each row, non-informative
+  select(-title)
 
 # data splitting
 set.seed(100) # Important!
-alz_split  <- initial_split(alz, strata = Class, prop = .9)
-alz_train  <- training(alz_split)
-alz_test   <- testing(alz_split)
+bechdel_split  <- initial_split(bechdel, strata = bechdel, prop = .9)
+bechdel_train  <- training(bechdel_split)
+bechdel_test   <- testing(bechdel_split)
 
 # data resampling
 set.seed(100)
-alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = bechdel)
 
 # KNN model
 knn_mod <-nearest_neighbor() %>%              
@@ -35,29 +36,29 @@ Unscramble! You have all the steps from our `knn_rec`- your challenge is to *uns
 Save the result as `knn_rec`
 
 ```{r}
-step_dummy(all_nominal(), -all_outcomes())
+step_dummy(all_nominal_predictors())
 
-step_normalize(all_numeric()) 
+step_normalize(all_numeric_predictors()) 
 
-recipe(Class ~ ., data = alz)
+recipe(bechdel ~ ., data = bechdel)
 
-step_novel(all_nominal(), -all_outcomes()) 
+step_novel(all_nominal_predictors())
 
 step_zv(all_predictors()) 
 
-step_other(Genotype, threshold = .03) 
+step_other(genre, threshold = .05) 
 ```
 
 Answer:
 
 ```{r}
-knn_rec <- 
-  recipe(Class ~ ., data = alz) %>%
-  step_other(Genotype, threshold = .03) %>% 
-  step_novel(all_nominal(), -all_outcomes()) %>% 
-  step_dummy(all_nominal(), -all_outcomes()) %>% 
+knn_rec <- recipe(bechdel ~ ., data = bechdel) %>% 
+  step_other(genre, threshold = .05) %>% 
+  step_novel(all_nominal_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors()) %>% 
-  step_normalize(all_numeric()) 
+  step_normalize(all_numeric_predictors()) 
+knn_rec
 ```
 
 # Your Turn 2
@@ -71,8 +72,10 @@ knn_wf <- ______ %>%
 knn_wf
 ```
 
+Answer:
+
 ```{r}
-knn_wf <-workflow() %>% 
+knn_wf <- workflow() %>% 
   add_recipe(knn_rec) %>% 
   add_model(knn_mod)
 knn_wf
@@ -85,8 +88,8 @@ Edit the code chunk below to fit the entire `knn_wflow` instead of just `knn_mod
 ```{r}
 set.seed(100)
 knn_mod %>% 
-  fit_resamples(Class ~ ., 
-                resamples = alz_folds) %>% 
+  fit_resamples(bechdel ~ ., 
+                resamples = bechdel_folds) %>% 
   collect_metrics()
 ```
 
@@ -95,7 +98,7 @@ Answer:
 ```{r}
 set.seed(100)
 knn_wf %>% 
-  fit_resamples(resamples = alz_folds) %>% 
+  fit_resamples(resamples = bechdel_folds) %>% 
   collect_metrics()
 ```
 
@@ -119,7 +122,7 @@ glmnet_wf <- knn_wf %>%
   update_model(plr_mod)
 
 glmnet_wf %>% 
-  fit_resamples(resamples = alz_folds) %>% 
+  fit_resamples(resamples = bechdel_folds) %>% 
   collect_metrics()
 ```
 

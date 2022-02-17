@@ -6,12 +6,11 @@ output: html_document
 ```{r setup, include=FALSE}
 options(scipen = 999)
 library(tidyverse)
-library(modeldata)
+library(rcfss)
 library(tidymodels)
 
-data("ad_data")
-alz <- ad_data
-alz
+data("bechdel")
+bechdel
 ```
 
 # Your Turn 1
@@ -46,11 +45,11 @@ Fill in the blanks.
 
 Use `initial_split()`, `training()`, and `testing()` to:
 
-1. Split **alz** into training and test sets. Save the rsplit!
+1. Split **bechdel** into training and test sets. Save the rsplit!
 
 2. Extract the training data and fit your classification tree model.
 
-3. Predict the testing data, and save the true `Class` values.
+3. Predict the testing data, and save the true `bechdel` values.
 
 4. Measure the accuracy of your model with your test set.  
 
@@ -61,15 +60,15 @@ Keep `set.seed(100)` at the start of your code.
 ```{r}
 set.seed(100) # Important!
 
-alz_split  <- ________(alz, strata = Class, prop = .9)
-alz_train  <- ________(alz_split)
-alz_test   <- ________(alz_split)
+bechdel_split  <- ________(data = bechdel, strata = bechdel, prop = .9)
+bechdel_train  <- ________(bechdel_split)
+bechdel_test   <- ________(bechdel_split)
 
 ________ %>% 
-  fit(Class ~ tau + VEGF, 
+  fit(bechdel ~ metascore + budget_2013, 
       data = ________) %>% 
   predict(new_data = ________) %>% 
-  mutate(true_class = ________) %>% 
+  mutate(true_bechdel = ________) %>% 
   accuracy(truth = ________, 
            estimate = .pred_class)
 ```
@@ -77,16 +76,16 @@ ________ %>%
 ```{r}
 set.seed(100) # Important!
 
-alz_split  <- initial_split(alz, strata = Class, prop = .9)
-alz_train  <- training(alz_split)
-alz_test   <- testing(alz_split)
+bechdel_split  <- initial_split(data = bechdel, strata = bechdel, prop = .9)
+bechdel_train  <- training(bechdel_split)
+bechdel_test   <- testing(bechdel_split)
 
 tree_mod %>% 
-  fit(Class ~ tau + VEGF, 
-      data = alz_train) %>% 
-  predict(new_data = alz_test) %>% 
-  mutate(true_class = alz_test$Class) %>% 
-  accuracy(truth = true_class, 
+  fit(bechdel ~ metascore + budget_2013, 
+      data = bechdel_train) %>% 
+  predict(new_data = bechdel_test) %>% 
+  mutate(true_bechdel = bechdel_test$bechdel) %>% 
+  accuracy(truth = true_bechdel, 
            estimate = .pred_class)
 ```
 
@@ -104,23 +103,23 @@ Run the code below. What does it return?
 
 ```{r}
 set.seed(100)
-alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
-alz_folds
+bechdel_folds <- vfold_cv(data = bechdel_train, v = 10, strata = bechdel)
+bechdel_folds
 ```
 
 
 ## Your Turn 5
 
-Modify the code below to use `fit_resamples` and `alz_folds` to cross-validate the classification tree model. What is the ROC AUC that you collect at the end?
+Modify the code below to use `fit_resamples` and `bechdel_folds` to cross-validate the classification tree model. What is the ROC AUC that you collect at the end?
 
 ```{r}
 set.seed(100)
 tree_mod %>% 
-  fit(Class ~ tau + VEGF, 
-      data = alz_train) %>% 
-  predict(new_data = alz_test) %>% 
-  mutate(true_class = alz_test$Class) %>% 
-  accuracy(truth = true_class, estimate = .pred_class)
+  fit(bechdel ~ metascore + budget_2013, 
+      data = bechdel_train) %>% 
+  predict(new_data = bechdel_test) %>% 
+  mutate(true_bechdel = bechdel_test$bechdel) %>% 
+  accuracy(truth = true_bechdel, estimate = .pred_class)
 ```
 
 Answer:
@@ -128,7 +127,7 @@ Answer:
 ```{r}
 set.seed(100)
 tree_mod %>% 
-  fit_resamples(Class ~ tau + VEGF, 
-                resamples = alz_folds) %>% 
+  fit_resamples(bechdel ~ metascore + budget_2013, 
+                resamples = bechdel_folds) %>% 
   collect_metrics()
 ```
