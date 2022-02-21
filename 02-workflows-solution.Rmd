@@ -6,8 +6,11 @@ output: html_document
 ```{r setup, include=FALSE}
 options(scipen = 999)
 library(tidyverse)
-library(rcfss)
 library(tidymodels)
+
+# update rcfss if the package is not up-to-date - only way to access bechdel
+# remotes::install_github("uc-cfss/rcfss")
+library(rcfss)
 
 bechdel <- bechdel %>%
   # remove column - unique to each row, non-informative
