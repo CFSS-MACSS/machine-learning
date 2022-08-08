@@ -8,9 +8,9 @@ options(scipen = 999)
 library(tidyverse)
 library(tidymodels)
 
-# update rcfss if the package is not up-to-date - only way to access bechdel
-# remotes::install_github("uc-cfss/rcfss")
-library(rcfss)
+# update rcis if the package is not up-to-date - only way to access bechdel
+# remotes::install_github("uc-cfss/rcis")
+library(rcis)
 
 bechdel <- bechdel %>%
   # remove column - unique to each row, non-informative
@@ -18,13 +18,13 @@ bechdel <- bechdel %>%
 
 # data splitting
 set.seed(100) # Important!
-bechdel_split  <- initial_split(bechdel, strata = bechdel, prop = .9)
+bechdel_split  <- initial_split(bechdel, strata = test, prop = .9)
 bechdel_train  <- training(bechdel_split)
 bechdel_test   <- testing(bechdel_split)
 
 # data resampling
 set.seed(100)
-bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = bechdel)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = test)
 
 # KNN model
 knn_mod <-nearest_neighbor() %>%              
@@ -43,7 +43,7 @@ step_dummy(all_nominal_predictors())
 
 step_normalize(all_numeric_predictors()) 
 
-recipe(bechdel ~ ., data = bechdel)
+recipe(test ~ ., data = bechdel)
 
 step_novel(all_nominal_predictors())
 
@@ -55,7 +55,7 @@ step_other(genre, threshold = .05)
 Answer:
 
 ```{r}
-knn_rec <- recipe(bechdel ~ ., data = bechdel) %>% 
+knn_rec <- recipe(test ~ ., data = bechdel) %>% 
   step_other(genre, threshold = .05) %>% 
   step_novel(all_nominal_predictors()) %>% 
   step_dummy(all_nominal_predictors()) %>% 
@@ -91,7 +91,7 @@ Edit the code chunk below to fit the entire `knn_wflow` instead of just `knn_mod
 ```{r}
 set.seed(100)
 knn_mod %>% 
-  fit_resamples(bechdel ~ ., 
+  fit_resamples(test ~ ., 
                 resamples = bechdel_folds) %>% 
   collect_metrics()
 ```

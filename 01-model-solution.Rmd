@@ -8,9 +8,9 @@ options(scipen = 999)
 library(tidyverse)
 library(tidymodels)
 
-# update rcfss if the package is not up-to-date - only way to access bechdel
-# remotes::install_github("uc-cfss/rcfss")
-library(rcfss)
+# update rcis if the package is not up-to-date - only way to access bechdel
+# remotes::install_github("uc-cfss/rcis")
+library(rcis)
 
 data("bechdel")
 bechdel
@@ -52,7 +52,7 @@ Use `initial_split()`, `training()`, and `testing()` to:
 
 2. Extract the training data and fit your classification tree model.
 
-3. Predict the testing data, and save the true `bechdel` values.
+3. Predict the testing data, and save the true `test` values.
 
 4. Measure the accuracy of your model with your test set.  
 
@@ -63,12 +63,12 @@ Keep `set.seed(100)` at the start of your code.
 ```{r}
 set.seed(100) # Important!
 
-bechdel_split  <- ________(data = bechdel, strata = bechdel, prop = 3/4)
+bechdel_split  <- ________(data = bechdel, strata = test, prop = 3/4)
 bechdel_train  <- ________(bechdel_split)
 bechdel_test   <- ________(bechdel_split)
 
 ________ %>% 
-  fit(bechdel ~ metascore + imdb_rating, 
+  fit(test ~ metascore + imdb_rating, 
       data = ________) %>% 
   predict(new_data = ________) %>% 
   mutate(true_bechdel = ________) %>% 
@@ -79,15 +79,15 @@ ________ %>%
 ```{r}
 set.seed(100) # Important!
 
-bechdel_split  <- initial_split(data = bechdel, strata = bechdel, prop = 3/4)
+bechdel_split  <- initial_split(data = bechdel, strata = test, prop = 3/4)
 bechdel_train  <- training(bechdel_split)
 bechdel_test   <- testing(bechdel_split)
 
 tree_mod %>% 
-  fit(bechdel ~ metascore + imdb_rating, 
+  fit(test ~ metascore + imdb_rating, 
       data = bechdel_train) %>% 
   predict(new_data = bechdel_test) %>% 
-  mutate(true_bechdel = bechdel_test$bechdel) %>% 
+  mutate(true_bechdel = bechdel_test$test) %>% 
   accuracy(truth = true_bechdel, 
            estimate = .pred_class)
 ```
@@ -106,7 +106,7 @@ Run the code below. What does it return?
 
 ```{r}
 set.seed(100)
-bechdel_folds <- vfold_cv(data = bechdel_train, v = 10, strata = bechdel)
+bechdel_folds <- vfold_cv(data = bechdel_train, v = 10, strata = test)
 bechdel_folds
 ```
 
@@ -118,10 +118,10 @@ Modify the code below to use `fit_resamples` and `bechdel_folds` to cross-valida
 ```{r}
 set.seed(100)
 tree_mod %>% 
-  fit(bechdel ~ metascore + imdb_rating, 
+  fit(test ~ metascore + imdb_rating, 
       data = bechdel_train) %>% 
   predict(new_data = bechdel_test) %>% 
-  mutate(true_bechdel = bechdel_test$bechdel) %>% 
+  mutate(true_bechdel = bechdel_test$test) %>% 
   accuracy(truth = true_bechdel, estimate = .pred_class)
 ```
 
@@ -130,7 +130,7 @@ Answer:
 ```{r}
 set.seed(100)
 tree_mod %>% 
-  fit_resamples(bechdel ~ metascore + imdb_rating, 
+  fit_resamples(test ~ metascore + imdb_rating, 
                 resamples = bechdel_folds) %>% 
   collect_metrics()
 ```
