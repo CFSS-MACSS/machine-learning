@@ -49,9 +49,7 @@ Use `initial_split()`, `training()`, and `testing()` to:
 
 2. Extract the training data and fit your classification tree model.
 
-3. Predict the testing data, and save the true `test` values.
-
-4. Measure the accuracy of your model with your test set.  
+3. Check the proportions of the `test` variable in each set.
 
 Keep `set.seed(100)` at the start of your code.
 
@@ -59,29 +57,12 @@ Keep `set.seed(100)` at the start of your code.
 
 ```{r}
 set.seed(100) # Important!
-
-bechdel_split  <- ________(data = bechdel, strata = test, prop = 3/4)
+bechdel_split  <- ________(bechdel, strata = test, prop = 3 / 4)
 bechdel_train  <- ________(bechdel_split)
 bechdel_test   <- ________(bechdel_split)
-
-________ %>% 
-  fit(test ~ metascore + imdb_rating, 
-      data = ________) %>% 
-  predict(new_data = ________) %>% 
-  mutate(true_bechdel = ________) %>% 
-  accuracy(truth = ________, 
-           estimate = .pred_class)
 ```
 
 ## Your Turn 3
-
-What would happen if you repeated this process? Would you get the same answers?
-
-Note your accuracy from above. Then change your seed number and rerun just the last code chunk above. Do you get the same answer? 
-
-Try it a few times with a few different seeds.
-
-## Your Turn 4
 
 Run the code below. What does it return?
 
@@ -91,16 +72,20 @@ bechdel_folds <- vfold_cv(data = bechdel_train, v = 10, strata = test)
 bechdel_folds
 ```
 
-## Your Turn 5
+## Your Turn 4
 
-Modify the code below to use `fit_resamples` and `bechdel_folds` to cross-validate the classification tree model. What is the ROC AUC that you collect at the end?
+Add a `autoplot()` to visualize the ROC AUC.
 
 ```{r}
-set.seed(100)
-tree_mod %>% 
-  fit(test ~ metascore + imdb_rating, 
-      data = bechdel_train) %>% 
-  predict(new_data = bechdel_test) %>% 
-  mutate(true_bechdel = bechdel_test$test) %>% 
-  accuracy(truth = true_bechdel, estimate = .pred_class)
+tree_preds <- tree_mod %>% 
+  fit_resamples(
+    test ~ metascore + imdb_rating, 
+    resamples = bechdel_folds,
+    control = control_resamples(save_pred = TRUE)
+  )
+
+tree_preds %>% 
+  collect_predictions() %>% 
+  roc_curve(truth = test, .pred_Fail) %>%
+  ________()
 ```
