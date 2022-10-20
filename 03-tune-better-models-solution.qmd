@@ -1,6 +1,6 @@
 ---
 title: "01-tune-better-models"
-output: html_document
+format: html
 ---
 
 ```{r setup, include=FALSE}

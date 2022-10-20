@@ -1,6 +1,6 @@
 ---
 title: "01-model"
-output: html_document
+format: html
 ---
 
 ```{r setup, include=FALSE}
